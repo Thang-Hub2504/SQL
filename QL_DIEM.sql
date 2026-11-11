@@ -1,0 +1,91 @@
+﻿USE master;
+GO
+IF DB_ID('QL_DIEM') IS NOT NULL
+BEGIN
+    ALTER DATABASE QL_DIEM SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE QL_DIEM;
+END
+GO
+CREATE DATABASE QL_DIEM;
+GO
+USE QL_DIEM;
+GO
+
+CREATE TABLE LOP (
+    MaLop  VARCHAR(50) PRIMARY KEY,
+    TenLop NVARCHAR(50)
+);
+
+CREATE TABLE HOCVIEN (
+    MaHV     INT PRIMARY KEY,
+    TenHV    NVARCHAR(50),
+    DT       VARCHAR(50),
+    GioiTinh NVARCHAR(3),
+    MaLop    VARCHAR(50) REFERENCES LOP(MaLop)
+);
+
+CREATE TABLE MON (
+    MaMon  VARCHAR(50) PRIMARY KEY,
+    TenMon NVARCHAR(50),
+    STC    INT
+);
+
+CREATE TABLE KETQUA (
+    MaHV   INT REFERENCES HOCVIEN(MaHV),
+    MaMon  VARCHAR(50) REFERENCES MON(MaMon),
+    LanThi INT,
+    Diem   FLOAT,
+    PRIMARY KEY (MaHV, MaMon, LanThi)
+);
+GO
+
+INSERT INTO LOP VALUES
+('L01', N'Công nghệ thông tin A'),
+('L02', N'Công nghệ thông tin B');
+
+INSERT INTO MON VALUES
+('M01', N'Cơ sở dữ liệu', 3),
+('M02', N'Lập trình căn bản', 4),
+('M03', N'Mạng máy tính', 3);
+
+INSERT INTO HOCVIEN VALUES
+(1, N'Nguyễn Hoàng Thắng', '0901111111', N'Nam', 'L01'),
+(2, N'Nguyễn Hoàng Khá',   '0902222222', N'Nữ',  'L01'),
+(3, N'Nguyễn Tuấn Tú',     '0903333333', N'Nam', 'L02'),
+(4, N'Nguyễn Bá Đạt',      '0904444444', N'Nam', 'L01'),
+(5, N'Nguyễn Minh Đạt',    '0905555555', N'Nam', 'L01'),
+(6, N'Lê Đặng Trọng',      '0906666666', N'Nam', 'L02'),
+(7, N'Bùi Quang Tâm',      '0907777777', N'Nam', 'L02');
+
+INSERT INTO KETQUA VALUES
+(1, 'M01', 1, 8.5),
+(1, 'M02', 1, 7.0),
+(2, 'M01', 1, 4.0),
+(2, 'M01', 2, 6.5),
+(3, 'M03', 1, 9.0),
+(4, 'M01', 1, 7.5),
+(5, 'M02', 1, 6.0),
+(6, 'M03', 1, 8.0),
+(7, 'M01', 1, 5.5);
+GO
+
+
+SELECT TenHV, TenLop
+FROM HOCVIEN JOIN LOP ON HOCVIEN.MaLop = LOP.MaLop;
+
+
+SELECT TenHV FROM HOCVIEN WHERE GioiTinh = N'Nam';
+
+
+SELECT TenMon FROM MON WHERE STC = 3;
+
+
+SELECT TenHV, TenMon, Diem
+FROM KETQUA
+JOIN HOCVIEN ON KETQUA.MaHV = HOCVIEN.MaHV
+JOIN MON ON KETQUA.MaMon = MON.MaMon;
+
+
+SELECT HOCVIEN.MaHV, TenHV, COUNT(DISTINCT MaMon) AS SoMonDaThi
+FROM HOCVIEN JOIN KETQUA ON HOCVIEN.MaHV = KETQUA.MaHV
+GROUP BY HOCVIEN.MaHV, TenHV;

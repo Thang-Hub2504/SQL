@@ -1,0 +1,19 @@
+USE QL_DIEM;
+GO
+
+SELECT hv.TenHV, l.TenLop
+FROM HOCVIEN hv JOIN LOP l ON hv.MaLop = l.MaLop;
+
+SELECT TenHV FROM HOCVIEN WHERE GioiTinh = N'Nam';
+
+SELECT TenMon FROM MON WHERE STC = 3;
+
+SELECT hv.TenHV, m.TenMon, kq.Diem
+FROM KETQUA kq
+JOIN HOCVIEN hv ON kq.MaHV = hv.MaHV
+JOIN MON m ON kq.MaMon = m.MaMon;
+
+SELECT hv.MaHV, hv.TenHV, COUNT(DISTINCT kq.MaMon) AS SoMonDaThi
+FROM HOCVIEN hv
+JOIN KETQUA kq ON hv.MaHV = kq.MaHV
+GROUP BY hv.MaHV, hv.TenHV;
