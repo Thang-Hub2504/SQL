@@ -1,0 +1,132 @@
+﻿CREATE DATABASE QL_THI
+GO
+USE QL_THI
+GO
+
+CREATE TABLE KHOA(
+	MaKhoa VARCHAR(50) PRIMARY KEY,
+	TenKhoa NVARCHAR(50)
+)
+GO
+
+CREATE TABLE LOP(
+	MaLop VARCHAR(50) PRIMARY KEY,
+	TenLop NVARCHAR(50),
+	MaKhoa VARCHAR(50) REFERENCES KHOA(MaKhoa)
+)
+GO
+
+CREATE TABLE SINHVIEN(
+	Mssv VARCHAR(50) PRIMARY KEY,
+	HOTEN	 NVARCHAR(50),
+	DanToc	NVARCHAR(50),
+	Phai NVARCHAR(50),
+	NoiSinh NVARCHAR(50),
+	NgaySinh DATE,
+	MaLop VARCHAR(50) REFERENCES LOP(MaLop)
+)
+GO
+
+CREATE TABLE MONTHI(
+	MaMT VARCHAR(50) PRIMARY KEY,
+	TenMT NVARCHAR(50),
+	NgayThi DATE,
+	BuoiThi NVARCHAR(50),
+	ThoiGian INT
+)
+GO
+
+CREATE TABLE THITN(
+	Mssv VARCHAR(50) REFERENCES SINHVIEN(Mssv),
+	MaMT VARCHAR(50) REFERENCES MONTHI(MaMT),
+	DiemThi DECIMAL(4,2),
+	PRIMARY KEY (Mssv, MaMT)
+)
+GO
+
+INSERT INTO KHOA VALUES 
+('K01',N'KHOA CÔNG NGHỆ THÔNG TIN'),
+('K02', N'KHOA KINH TẾ LUẬT')
+
+INSERT INTO LOP VALUES 
+('DA25CNTT','TTB','K01'),
+('DA25LUAT','LA','K02')
+
+INSERT INTO SINHVIEN VALUES
+('SV01', N'Nguyễn Hoàng Thắng', N'Kinh', N'Nam', N'Trà Vinh', '2007-04-25', 'DA25CNTT'),
+('SV02', N'Nguyễn Hoàng Trọng', N'Kinh', N'Nam', N'Vũng Tàu', '2007-09-21', 'DA25LUAT'),
+('SV03', N'Nguyễn Hoàng Đạt', N'Kinh', N'Nữ', N'Mỹ Tho', '2007-04-16', 'DA25CNTT'),
+('SV04', N'Nguyễn Hoàng Tú', N'Kinh', N'Nữ', N'Cần Thơ', '2007-03-12', 'DA25LUAT'),
+('SV05', N'Nguyễn Hoàng Tâm', N'Khmer', N'Nam', N'Trà Vinh', '2007-11-02', 'DA25CNTT'),
+('SV06', N'Nguyễn Hoàng Khá', N'Kinh', N'Nữ', N'Cần Thơ', '2007-08-30', 'DA25LUAT')
+
+INSERT INTO MONTHI VALUES
+('THI1','TOAN','2026-12-21',N'Sáng','120'),
+('THI2','NGUVAN','2026-12-21',N'Chiều','120'),
+('THI3','TIENGANH','2026-12-22',N'Tối','90')
+
+INSERT INTO THITN VALUES
+('SV01', 'THI1', 8.5),
+('SV01', 'THI2', 7.0),
+('SV01', 'THI3', 9.0),
+('SV02', 'THI1', 6.5),
+('SV02', 'THI2', 7.75),
+('SV03', 'THI1', 9.5),
+('SV03', 'THI3', 5.0),
+('SV04', 'THI2', 8.0),
+('SV05', 'THI1', 4.5),
+('SV05', 'THI3', 7.25)
+
+
+SELECT HOTEN FROM SINHVIEN WHERE NoiSinh IN (N'Trà Vinh', N'Cần Thơ')
+
+
+SELECT L.TenLop, COUNT(S.Mssv) AS SoLuong
+FROM SINHVIEN S JOIN LOP L ON S.MaLop = L.MaLop
+GROUP BY L.MaLop, L.TenLop
+
+
+SELECT S.HOTEN, L.TenLop, K.TenKhoa
+FROM SINHVIEN S
+JOIN LOP L ON S.MaLop = L.MaLop
+JOIN KHOA K ON L.MaKhoa = K.MaKhoa
+
+
+SELECT S.HOTEN, T.DiemThi
+FROM SINHVIEN S
+JOIN THITN T ON S.Mssv = T.Mssv
+JOIN MONTHI M ON T.MaMT = M.MaMT
+WHERE M.TenMT = N'Toán'
+  AND T.DiemThi = (SELECT MAX(T2.DiemThi)
+                   FROM THITN T2
+                   JOIN MONTHI M2 ON T2.MaMT = M2.MaMT
+                   WHERE M2.TenMT = N'Toán')
+
+
+SELECT S.HOTEN, T.DiemThi
+FROM SINHVIEN S
+JOIN THITN T ON S.Mssv = T.Mssv
+JOIN MONTHI M ON T.MaMT = M.MaMT
+WHERE M.TenMT = N'Toán'
+  AND T.DiemThi = (SELECT MIN(T2.DiemThi)
+                   FROM THITN T2
+                   JOIN MONTHI M2 ON T2.MaMT = M2.MaMT
+                   WHERE M2.TenMT = N'Toán')
+
+
+SELECT HOTEN
+FROM SINHVIEN
+WHERE Mssv NOT IN (SELECT Mssv FROM THITN)
+
+
+
+SELECT M.TenMT, COUNT(T.Mssv) AS SoLuong
+FROM MONTHI M
+LEFT JOIN THITN T ON M.MaMT = T.MaMT
+GROUP BY M.MaMT, M.TenMT
+
+
+SELECT M.BuoiThi, COUNT(DISTINCT T.Mssv) AS SoLuong
+FROM MONTHI M
+JOIN THITN T ON M.MaMT = T.MaMT
+GROUP BY M.BuoiThi
